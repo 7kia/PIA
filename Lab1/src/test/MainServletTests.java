@@ -25,7 +25,9 @@ public class MainServletTests {
     static private String PATH_TO_MAIN_SERVLET = "http://localhost:8080/Lab1/MainServlet";
     private static ChromeDriverService service;
     private WebDriver driver;
-
+    
+    
+    
     @BeforeClass
     public static void createAndStartService() throws IOException{
         service = new ChromeDriverService.Builder()
@@ -50,18 +52,27 @@ public class MainServletTests {
     public void quitDriver() {
         driver.quit();
     }
+    
+    private void clearFields()
+    {
+        driver.findElement(By.className("nameField")).clear();
+        driver.findElement(By.className("authorField")).clear();
+        driver.findElement(By.className("publishingYearField")).clear();
 
+    }
+    
     @Test
     public void testAddBook() {
+    	driver.navigate().refresh();
         driver.get(PATH_TO_MAIN_SERVLET);
         
         Book book = new Book("n", "a", 1);
         
-        driver.findElement(By.className("nameBtn")).sendKeys(book.getName());
-        driver.findElement(By.className("authorBtn")).sendKeys(book.getAuthor());
+        driver.findElement(By.className("nameField")).sendKeys(book.getName());
+        driver.findElement(By.className("authorField")).sendKeys(book.getAuthor());
         
         String integerStr = Integer.toString(book.getPublishingYear());
-        driver.findElement(By.className("publishingYearBtn")).sendKeys(integerStr);
+        driver.findElement(By.className("publishingYearField")).sendKeys(integerStr);
 		    
         driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
         driver.findElement(By.className(MainServlet.SHOW_BUTTON_CLASS_NAME)).click();
@@ -70,7 +81,27 @@ public class MainServletTests {
         Assert.assertTrue(rows.get(0).getText() == book.getName());
         Assert.assertTrue(rows.get(1).getText() == book.getAuthor());
         Assert.assertTrue(rows.get(2).getText() == book.getPublishingYear().toString());
-
+    }
+    
+    @Test
+    public void testEmptyField() {
+    	driver.navigate().refresh();
+        driver.get(PATH_TO_MAIN_SERVLET);
+        
+        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
+        String errorMessage = driver.findElement(By.tagName("h1")).getText();
+        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("name"));
+        
+        driver.findElement(By.className("nameField")).sendKeys("a");
+        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
+        errorMessage = driver.findElement(By.tagName("h1")).getText();
+        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("author"));
+        
+        driver.findElement(By.className("nameField")).sendKeys("a");
+        driver.findElement(By.className("authorField")).sendKeys("a1");
+        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
+        errorMessage = driver.findElement(By.tagName("h1")).getText();
+        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("publishingYear"));
     }
 
    
