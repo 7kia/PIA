@@ -63,34 +63,33 @@ public class MainServlet extends HttpServlet {
     		String yearString = request.getParameter("publishingYear");
     		Integer number = Integer.parseUnsignedInt(yearString);
     	} catch(NumberFormatException e) {
-    		errorMessage = "Field \"Publishing Year\" must be unsigned number in range[" 
-    					+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
+    		errorMessage = getOutOfRangeMessage();
     		return false;
     	}
     	return true;		
     }
     
+    static public String getOutOfRangeMessage() {
+    	return "Field \"Publishing Year\" must be unsigned number in range[" 
+				+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
+    }
+    
     private boolean fieldIsEmpty(HttpServletRequest request, String fieldName)
     {
     	if(request.getParameter(fieldName).isEmpty()) {
-    		errorMessage = getErrorMessage(fieldName);
+    		errorMessage = getEmptyMessage(fieldName);
     		return true;
     	}
     	return false;
     }
     
-    static public String getErrorMessage(String fieldName)
+    static public String getEmptyMessage(String fieldName)
     {
-    	if(fieldName != "publishingYear")
-    	{
-    		return "Field \"" + fieldName + "\" is empty!";
-    	}
-    	return "Field \"Publishing Year\" must be unsigned number in range[" 
-				+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
+    	return "Field \"" + fieldName + "\" is empty!";
     }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if(books.isEmpty()) {
+    	if(books.isEmpty()) {
             request.setAttribute("showAddBookPage", true);
             doPost(request, response);
             return;

@@ -2,7 +2,6 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -12,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -44,6 +42,9 @@ public class MainServletTests {
     public void createDriver() {
         driver = new RemoteWebDriver(service.getUrl(),
                 DesiredCapabilities.chrome());
+        
+        driver.navigate().refresh();
+        driver.get(PATH_TO_MAIN_SERVLET);
     }
 
     @After
@@ -52,86 +53,53 @@ public class MainServletTests {
     }
     
     @Test
-    public void testAddBook() {
-    	driver.navigate().refresh();
-        driver.get(PATH_TO_MAIN_SERVLET);
-        
-        Book book = new Book("n", "a", 1);
-        
-        fillFields(book);
-		    
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        driver.findElement(By.className(MainServlet.SHOW_BUTTON_CLASS_NAME)).click();
-	  
-        List<WebElement> rows = driver.findElements(By.tagName("td"));
-        
-        String s1 = rows.get(0).getText();
-        String s2 = rows.get(1).getText();
-        String s3 = rows.get(2).getText();
-        Assert.assertFalse(rows.get(0).getText() == book.name);
-        Assert.assertFalse(rows.get(1).getText() == book.author);
-        Assert.assertFalse(rows.get(2).getText() == book.publishingYear.toString());
-    }
-    
-    @Test
     public void testEmptyField() {
-    	driver.navigate().refresh();
-        driver.get(PATH_TO_MAIN_SERVLET);
-        
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        String errorMessage = driver.findElement(By.tagName("h1")).getText();
-        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("name"));
-        
-        driver.findElement(By.className("nameField")).sendKeys("a");
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        errorMessage = driver.findElement(By.tagName("h1")).getText();
-        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("author"));
-        
-        driver.findElement(By.className("nameField")).sendKeys("a");
-        driver.findElement(By.className("authorField")).sendKeys("a1");
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        errorMessage = driver.findElement(By.tagName("h1")).getText();
-        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("publishingYear"));
+    	testFields("", "a", "5",  MainServlet.getEmptyMessage("name"));
+    	testFields("n", "", "2",  MainServlet.getEmptyMessage("author"));
+    	testFields("c", "a", "",  MainServlet.getEmptyMessage("publishingYear"));
     }
 
     @Test
-    public void testPublishingData() {
-    	driver.navigate().refresh();
-        driver.get(PATH_TO_MAIN_SERVLET);
+    public void testPublishingDataField() {
+        testFields("n", "a", "-9999999999", MainServlet.getOutOfRangeMessage());
+        testBook(new Book("n", "a", Integer.MIN_VALUE), MainServlet.getEmptyMessage("publishingYear"));
+        testBook(new Book("n", "a", -1), MainServlet.getEmptyMessage("publishingYear"));
+        testFields("n", "a", "9999999999", MainServlet.getOutOfRangeMessage());
         
-        testFields("n", "a", "-9999999999", "publishingYear");
-        testBook(new Book("n", "a", Integer.MIN_VALUE), "publishingYear");
-        testBook(new Book("n", "a", -1), "publishingYear");
         testBook(new Book("n", "a", 0), null);
         testBook(new Book("n", "a", 2017), null);
         testBook(new Book("n", "a", Integer.MAX_VALUE), null);
-        testFields("n", "a", "9999999999", "publishingYear");
     }
   
-    private void testBook(Book book, String incorrectField)
+    @Test
+    public void testNameAndAuthorFields() {
+        testBook(new Book("a", "b", 0), null);
+    }
+    
+    private void testBook(Book book, String servletMessage)
     {
     	fillFields(book);
-    	sumbmitData(incorrectField);
+    	sumbmitData(servletMessage);
     }
     
     private void testFields(
     		String name,
     		String author,
     		String publishingYear,
-    		String incorrectField
+    		String servletMessage
     ) {
     	fillFields(name, author, publishingYear);
-    	sumbmitData(incorrectField);
+    	sumbmitData(servletMessage);
     }
     
-    private void sumbmitData(String incorrectField)
+    private void sumbmitData(String servletMessage)
     {
     	driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
     	
-    	if(incorrectField != null)
+    	if(servletMessage != null)
     	{
     		String errorMessage = driver.findElement(By.tagName("h1")).getText();
-    		Assert.assertEquals(errorMessage, MainServlet.getErrorMessage(incorrectField));
+    		Assert.assertEquals(errorMessage, servletMessage);
     	}
     }
     
