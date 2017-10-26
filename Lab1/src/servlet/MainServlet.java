@@ -32,7 +32,8 @@ public class MainServlet extends HttpServlet {
     	if(request.getAttribute("showAddBookPage") == null) {
     		if(!(fieldIsEmpty(request, "name")
     				|| fieldIsEmpty(request, "author")
-    				|| fieldIsEmpty(request, "publishingYear"))
+    				|| fieldIsEmpty(request, "publishingYear")
+    				)
     		) {
     			addBook(request);
     		}
@@ -60,9 +61,10 @@ public class MainServlet extends HttpServlet {
     	try
     	{
     		String yearString = request.getParameter("publishingYear");
-    		Integer.parseUnsignedInt(yearString);
+    		Integer number = Integer.parseUnsignedInt(yearString);
     	} catch(NumberFormatException e) {
-    		errorMessage = "Field \"Publishing Year\" must be unsigned number";
+    		errorMessage = "Field \"Publishing Year\" must be unsigned number in range[" 
+    					+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
     		return false;
     	}
     	return true;		
@@ -79,7 +81,12 @@ public class MainServlet extends HttpServlet {
     
     static public String getErrorMessage(String fieldName)
     {
-    	return "Field \"" + fieldName + "\" is empty!";
+    	if(fieldName != "publishingYear")
+    	{
+    		return "Field \"" + fieldName + "\" is empty!";
+    	}
+    	return "Field \"Publishing Year\" must be unsigned number in range[" 
+				+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
     }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -104,17 +111,16 @@ public class MainServlet extends HttpServlet {
     	String addFormHtmlPage = getHeader();
     	if(!errorMessage.isEmpty())
     	{
-    		addFormHtmlPage += getErrorMessage();
-    		errorMessage = new String();
+    		addFormHtmlPage += getErrorMessageHtml();
     	}
     	addFormHtmlPage += getAddBookForm();               
     	addFormHtmlPage += getFooter();
         return addFormHtmlPage;
     }
        
-    private String getErrorMessage()
+    private String getErrorMessageHtml()
     {
-    	return "<h1>" + errorMessage + "</h1>\n";
+    	return "<h1>" + errorMessage + "</h1>\n";	
     }
     
     private String getAddBookForm()

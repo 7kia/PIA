@@ -25,9 +25,7 @@ public class MainServletTests {
     static private String PATH_TO_MAIN_SERVLET = "http://localhost:8080/Lab1/MainServlet";
     private static ChromeDriverService service;
     private WebDriver driver;
-    
-    
-    
+     
     @BeforeClass
     public static void createAndStartService() throws IOException{
         service = new ChromeDriverService.Builder()
@@ -96,6 +94,47 @@ public class MainServletTests {
         Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("publishingYear"));
     }
 
+    @Test
+    public void testPublishingData() {
+    	driver.navigate().refresh();
+        driver.get(PATH_TO_MAIN_SERVLET);
+        
+        testFields("n", "a", "-9999999999", "publishingYear");
+        testBook(new Book("n", "a", Integer.MIN_VALUE), "publishingYear");
+        testBook(new Book("n", "a", -1), "publishingYear");
+        testBook(new Book("n", "a", 0), null);
+        testBook(new Book("n", "a", 2017), null);
+        testBook(new Book("n", "a", Integer.MAX_VALUE), null);
+        testFields("n", "a", "9999999999", "publishingYear");
+    }
+  
+    private void testBook(Book book, String incorrectField)
+    {
+    	fillFields(book);
+    	sumbmitData(incorrectField);
+    }
+    
+    private void testFields(
+    		String name,
+    		String author,
+    		String publishingYear,
+    		String incorrectField
+    ) {
+    	fillFields(name, author, publishingYear);
+    	sumbmitData(incorrectField);
+    }
+    
+    private void sumbmitData(String incorrectField)
+    {
+    	driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
+    	
+    	if(incorrectField != null)
+    	{
+    		String errorMessage = driver.findElement(By.tagName("h1")).getText();
+    		Assert.assertEquals(errorMessage, MainServlet.getErrorMessage(incorrectField));
+    	}
+    }
+    
     private void fillFields(Book book)
     {
         driver.findElement(By.className("nameField")).sendKeys(book.name);
@@ -105,28 +144,10 @@ public class MainServletTests {
         driver.findElement(By.className("publishingYearField")).sendKeys(integerStr);
     }
     
-    @Test
-    public void testPublishingData() {
-    	driver.navigate().refresh();
-        driver.get(PATH_TO_MAIN_SERVLET);
-        
-        Book book = new Book("n", "a", -1);
-        
-        checkIncorrectPublishingYear(-1, book);
-        checkIncorrectPublishingYear(-10000, book);
-        
-        driver.findElement(By.className("publishingYearField")).sendKeys("ds");	    
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        String errorMessage = driver.findElement(By.tagName("h1")).getText();
-        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("publishingYear"));
-    }
-   
-    private void checkIncorrectPublishingYear(Integer year, Book book)
+    private void fillFields(String name, String author, String publishingYear)
     {
-    	book.publishingYear = year;
-        fillFields(book);		    
-        driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
-        String errorMessage = driver.findElement(By.tagName("h1")).getText();
-        Assert.assertEquals(errorMessage, MainServlet.getErrorMessage("publishingYear"));
+        driver.findElement(By.className("nameField")).sendKeys(name);
+        driver.findElement(By.className("authorField")).sendKeys(author);
+        driver.findElement(By.className("publishingYearField")).sendKeys(publishingYear);
     }
 }
