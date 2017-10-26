@@ -163,9 +163,9 @@ public class MainServlet extends HttpServlet {
     	for(Book book : books)
         {
     		htmlTable += "<tr>\n" +
-                            "<td>" + book.getName() + "</td>\n" +
-                            "<td>" + book.getAuthor() + "</td>\n" +
-                            "<td>" + book.getPublishingYear() + "</td>\n" +
+                            "<td>" + book.name + "</td>\n" +
+                            "<td>" + book.author + "</td>\n" +
+                            "<td>" + book.publishingYear + "</td>\n" +
                             "</tr>\n";
         }
     	
