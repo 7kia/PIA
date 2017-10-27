@@ -2,8 +2,13 @@ package servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,7 +24,7 @@ import model.Book;
 public class MainServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private List<Book> books;   
-	private String errorMessage = new String();;
+	private String errorMessage = new String();
 	
 	static public String SHOW_BUTTON_CLASS_NAME = "showBtn";
 	static public String BOOK_TABLE_TITLE = "Book table";
@@ -32,7 +37,8 @@ public class MainServlet extends HttpServlet {
     	if(request.getAttribute("showAddBookPage") == null) {
     		if(!(fieldIsEmpty(request, "name")
     				|| fieldIsEmpty(request, "author")
-    				|| fieldIsEmpty(request, "publishingYear")
+    				|| fieldIsEmpty(request, "pageAmount")
+    				|| fieldIsEmpty(request, "publishingDate")
     				)
     		) {
     			addBook(request);
@@ -42,7 +48,17 @@ public class MainServlet extends HttpServlet {
     	printHtmlPage(response, getAddBookPage());
     }
     
-    private void addBook(HttpServletRequest request)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		if(books.isEmpty()) {
+	        request.setAttribute("showAddBookPage", true);
+	        doPost(request, response);
+	        return;
+	    }
+	    
+	    printHtmlPage(response, getBooksListPage(books));
+	}
+
+	private void addBook(HttpServletRequest request)
     {
     	String name = request.getParameter("name");
 		String author = request.getParameter("author");
@@ -50,17 +66,52 @@ public class MainServlet extends HttpServlet {
 		if(!checkPublishingYear(request)) {
 			return;
 		}
-		String yearString = request.getParameter("publishingYear");
-		Integer publishingYear = Integer.parseUnsignedInt(yearString);
-		   
-		books.add(new Book(name, author, publishingYear));
+		String yearString = request.getParameter("pageAmount");
+		Integer pageAmount = Integer.parseUnsignedInt(yearString);
+		
+		if(!checkPublishingData(request))
+		{
+			return;
+		}
+		
+		String dateStr = request.getParameter("publishingDate");
+    	DateFormat format = getDateFormat();
+		try {
+			books.add(new Book(name, author, pageAmount, format.parse(dateStr)));
+			errorMessage = new String();
+		} catch (ParseException e) {
+			System.out.println("Publishing date incorrect. MainServlet.addBook()");
+		}
     }
     
-    private boolean checkPublishingYear(HttpServletRequest request)
+    public static SimpleDateFormat getDateFormat()
+    {
+    	return new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+    }
+    
+    public static String getStringDatePresentation(Date date)
+    {
+    	return getDateFormat().format(date);
+    }
+    
+    private boolean checkPublishingData(HttpServletRequest request) {
+    	String dateStr = request.getParameter("publishingDate");
+    	DateFormat format = getDateFormat();
+    	
+    	try {
+			Date date = format.parse(dateStr);
+		} catch (ParseException e) {
+			errorMessage = getIncorrectDateMesage();
+			return false;
+		}
+		return true;
+	}
+
+	private boolean checkPublishingYear(HttpServletRequest request)
     {
     	try
     	{
-    		String yearString = request.getParameter("publishingYear");
+    		String yearString = request.getParameter("pageAmount");
     		Integer number = Integer.parseUnsignedInt(yearString);
     	} catch(NumberFormatException e) {
     		errorMessage = getOutOfRangeMessage();
@@ -70,8 +121,13 @@ public class MainServlet extends HttpServlet {
     }
     
     static public String getOutOfRangeMessage() {
-    	return "Field \"Publishing Year\" must be unsigned number in range[" 
-				+ Integer.MIN_VALUE + "; " + Integer.MAX_VALUE + "]";
+    	return "Field \"Page amount\" must be unsigned number in range[" 
+				+ 0 + "; " + Integer.MAX_VALUE + "]";
+    }
+    
+    static public String getIncorrectDateMesage()
+    {
+    	return "Field \"Publishing date\" must contain date";
     }
     
     private boolean fieldIsEmpty(HttpServletRequest request, String fieldName)
@@ -88,16 +144,6 @@ public class MainServlet extends HttpServlet {
     	return "Field \"" + fieldName + "\" is empty!";
     }
     
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	if(books.isEmpty()) {
-            request.setAttribute("showAddBookPage", true);
-            doPost(request, response);
-            return;
-        }
-        
-        printHtmlPage(response, getBooksListPage(books));
-    }
-
     private void printHtmlPage(HttpServletResponse response, String page) throws IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
@@ -127,7 +173,8 @@ public class MainServlet extends HttpServlet {
     	return "<form action = \"MainServlet\" method = \"POST\">\n" +
     			getInputHtml("Book Name", "text", "name", "nameField") +
     			getInputHtml("Author", "text", "author", "authorField") +
-    			getInputHtml("Publishing year", "number", "publishingYear", "publishingYearField") +
+    			getInputHtml("Page amount", "number", "pageAmount", "pageAmountField") +
+    			getInputHtml("Publishing date", "date", "publishingDate", "publishingDateField") +
             "<input type = \"submit\" value = \"Add book\" class =\"" + ADD_BOOK_BTN + "\"/>\n" +
             "</form>\n" +  
             getHtmlButton("GET", "Show my books", SHOW_BUTTON_CLASS_NAME);
@@ -162,7 +209,8 @@ public class MainServlet extends HttpServlet {
     	htmlTable += "<tr>\n" +
                 "<th>Name</th>\n" +
                 "<th>Author</th>\n" +
-                "<th>Publishing year</th>\n" +
+                "<th>Page amount</th>\n" +
+                "<th>Publishing date</th>\n" +
                 "</tr>\n";
     	
     	for(Book book : books)
@@ -170,7 +218,8 @@ public class MainServlet extends HttpServlet {
     		htmlTable += "<tr>\n" +
                             "<td>" + book.name + "</td>\n" +
                             "<td>" + book.author + "</td>\n" +
-                            "<td>" + book.publishingYear + "</td>\n" +
+                            "<td>" + book.pageAmount + "</td>\n" +
+                            "<td>" + book.publishingData + "</td>\n" +
                             "</tr>\n";
         }
     	
