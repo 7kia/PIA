@@ -12,15 +12,14 @@
                 <th>Page amount</th>
                 <th>Publishing date</th>
            </tr>
-		
-		//for(Book book : books)
-		<tr>
-           <td> + book.name + </td>
-           <td> + book.author + </td>
-           <td> + book.pageAmount + </td>
-           <td> + book.publishingData + </td>
-        </tr>
-		//
+			<c:forEach items="${books}" var="book">
+				<tr>
+		           <td> + book.name + </td>
+		           <td> + book.author + </td>
+		           <td> + book.pageAmount + </td>
+		           <td> + book.publishingData + </td>
+		        </tr>
+			</c:forEach>
 		</table>
 	</body>
 </html>

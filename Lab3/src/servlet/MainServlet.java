@@ -45,7 +45,8 @@ public class MainServlet extends HttpServlet {
     		}
         }
     	
-    	printHtmlPage(response, getAddBookPage());
+		request.setAttribute("errorMessage", errorMessage);
+    	request.getRequestDispatcher("AddBooks.jsp").forward(request, response);
     }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -55,7 +56,8 @@ public class MainServlet extends HttpServlet {
 	        return;
 	    }
 	    
-	    printHtmlPage(response, getBooksListPage(books));
+		request.setAttribute("books", books);
+		request.getRequestDispatcher("BookTable.jsp").forward(request, response);
 	}
 
 	private void addBook(HttpServletRequest request)
@@ -144,97 +146,5 @@ public class MainServlet extends HttpServlet {
     	return "Field \"" + fieldName + "\" is empty!";
     }
     
-    private void printHtmlPage(HttpServletResponse response, String page) throws IOException {
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.print(page);
-        out.flush();
-    }
     
-    private String getAddBookPage()
-    {
-    	String addFormHtmlPage = getHeader();
-    	if(!errorMessage.isEmpty())
-    	{
-    		addFormHtmlPage += getErrorMessageHtml();
-    	}
-    	addFormHtmlPage += getAddBookForm();               
-    	addFormHtmlPage += getFooter();
-        return addFormHtmlPage;
-    }
-       
-    private String getErrorMessageHtml()
-    {
-    	return "<h1>" + errorMessage + "</h1>\n";	
-    }
-    
-    private String getAddBookForm()
-    {
-    	return "<form action = \"MainServlet\" method = \"POST\">\n" +
-    			getInputHtml("Book Name", "text", "name", "nameField") +
-    			getInputHtml("Author", "text", "author", "authorField") +
-    			getInputHtml("Page amount", "number", "pageAmount", "pageAmountField") +
-    			getInputHtml("Publishing date", "date", "publishingDate", "publishingDateField") +
-            "<input type = \"submit\" value = \"Add book\" class =\"" + ADD_BOOK_BTN + "\"/>\n" +
-            "</form>\n" +  
-            getHtmlButton("GET", "Show my books", SHOW_BUTTON_CLASS_NAME);
-    }
-    
-    private String getInputHtml(String title, String type, String name, String className)
-    {
-    	return title + ": <input type = \"" + type + "\" name = \"" + name 
-    			+ "\" class =\"" + className + "\"/>\n" +
-                "<br />\n" ;
-    }
-    
-    private String getBooksListPage(List<Book> Books) {
-    	String bookListHtmlPage = getHeader();
-    	bookListHtmlPage += "<h1>" + BOOK_TABLE_TITLE + "</h1>";
-    	bookListHtmlPage +=getBookTable(Books);               
-        bookListHtmlPage += getFooter();
-        return bookListHtmlPage;
-    }
-    
-    private String getHtmlButton(String method, String title, String className)
-    {
-    	return "<form action = \"MainServlet\" method=\"" + method +"\">\n" +
-    			"<input type = \"submit\" class=\"" + className + 
-    			"\" value = \"" + title + "\" />\n" +
-    			"</form>\n";
-    }
-    
-    private String getBookTable(List<Book> Books)
-    {
-    	String htmlTable = "<table>\n";
-    	htmlTable += "<tr>\n" +
-                "<th>Name</th>\n" +
-                "<th>Author</th>\n" +
-                "<th>Page amount</th>\n" +
-                "<th>Publishing date</th>\n" +
-                "</tr>\n";
-    	
-    	for(Book book : books)
-        {
-    		htmlTable += "<tr>\n" +
-                            "<td>" + book.name + "</td>\n" +
-                            "<td>" + book.author + "</td>\n" +
-                            "<td>" + book.pageAmount + "</td>\n" +
-                            "<td>" + book.publishingData + "</td>\n" +
-                            "</tr>\n";
-        }
-    	
-    	htmlTable += "</table>\n";
-    	return htmlTable;
-    }
-
-    public String getHeader() {
-        return "<!DOCTYPE html>\n" +
-            "<html lang=\"en\">\n" +
-            "<body>\n";
-    }
-
-    private String getFooter() {
-        return "</body>\n" +
-        		"</html>";
-    }
 }

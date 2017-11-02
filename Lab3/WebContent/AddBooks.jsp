@@ -5,6 +5,7 @@
 		<title>Books</title>
 	</head>
 	<body>
+		<h1>${errorMessage}</h1>
 		<form action = "MainServlet" method = "POST">
 		    Book Name: <input type = "text" name = "name"
 		    	class="nameField">
