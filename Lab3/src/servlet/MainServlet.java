@@ -1,22 +1,19 @@
 package servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.sun.javafx.collections.MappingChange.Map;
 
 import model.Book;
 
@@ -79,7 +76,8 @@ public class MainServlet extends HttpServlet {
 		String dateStr = request.getParameter("publishingDate");
     	DateFormat format = getDateFormat();
 		try {
-			books.add(new Book(name, author, pageAmount, format.parse(dateStr)));
+			java.sql.Date sqlDate = new java.sql.Date(format.parse(dateStr).getTime());
+			books.add(new Book(name, author, pageAmount, sqlDate));
 			errorMessage = new String();
 		} catch (ParseException e) {
 			System.out.println("Publishing date incorrect. MainServlet.addBook()");

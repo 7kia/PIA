@@ -2,7 +2,7 @@ package test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.sql.Date;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -21,7 +21,7 @@ import servlet.MainServlet;
 
 public class MainServletTests {
     static private String PATH_TO_CHROME_DRIVER = "f:\\SDK\\GeckoDriver\\chromedriver.exe";
-    static private String PATH_TO_MAIN_SERVLET = "http://localhost:8080/Lab1/MainServlet";
+    static private String PATH_TO_MAIN_SERVLET = "http://localhost:8080/Lab3/MainServlet";
     static private ChromeDriverService service;
     static private WebDriver driver;
     

@@ -9,16 +9,16 @@
 		<form action = "MainServlet" method = "POST">
 		    Book Name: <input type = "text" name = "name"
 		    	class="nameField">
-		    <br />
+		    <br/>
 		    Author: <input type = "text" name = "author"
 		    	class="authorField">
-		    <br />
+		    <br/>
 		    Page amount: <input type = "number" name = "pageAmount"
 		    	class="pageAmountField">
-		    <br />
+		    <br/>
 		    Publishing date: <input type = "date" name = "publishingDate"
 		    	class="publishingDateField">
-		    <br />
+		    <br/>
 		    
 		    <input type = "submit" value = "Add book" class="addBookBtn" />
 		  </form>

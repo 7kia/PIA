@@ -26,5 +26,6 @@
 	<classpathentry kind="lib" path="F:/SDK/selenium-java-3.6.0/libs/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="F:/SDK/selenium-java-3.6.0/libs/jna-platform-4.1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodbjdbc.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
