@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Book table</title>
+	</head>
+	<body>
+		<table>
+   			<tr>
+                <th>Name</th>
+                <th>Author</th>
+                <th>Page amount</th>
+                <th>Publishing date</th>
+           </tr>
+		
+		//for(Book book : books)
+		<tr>
+           <td> + book.name + </td>
+           <td> + book.author + </td>
+           <td> + book.pageAmount + </td>
+           <td> + book.publishingData + </td>
+        </tr>
+		//
+		</table>
+	</body>
+</html>
