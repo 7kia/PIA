@@ -27,5 +27,18 @@
 	<classpathentry kind="lib" path="F:/SDK/selenium-java-3.6.0/libs/jna-platform-4.1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
 	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodbjdbc.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/agent-tool.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/embedded-api.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuoagent.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodb-hibernate.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodbmanager.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodb-rest-api.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuodbtraymonitor.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/NuoDB/jar/nuokeymanager.jar"/>
+	<classpathentry kind="lib" path="F:/SDK/UCanAccess-4.0.2-bin/ucanaccess-4.0.2.jar"/>
+	<classpathentry kind="lib" path="F:/SDK/UCanAccess-4.0.2-bin/lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="F:/SDK/UCanAccess-4.0.2-bin/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="F:/SDK/UCanAccess-4.0.2-bin/lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="F:/SDK/UCanAccess-4.0.2-bin/lib/jackcess-2.1.6.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

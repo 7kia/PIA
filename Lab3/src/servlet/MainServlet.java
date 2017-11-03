@@ -1,6 +1,7 @@
 package servlet;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,26 +10,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 
 import model.Book;
+import model.BookDatabase;
 
 @WebServlet("/MainServlet")
 public class MainServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private List<Book> books;   
+  
 	private String errorMessage = new String();
+	private BookDatabase bookDatabase;
+
 	
 	static public String SHOW_BUTTON_CLASS_NAME = "showBtn";
 	static public String BOOK_TABLE_TITLE = "Book table";
 	static public String ADD_BOOK_BTN = "addBookBtn";
-    public MainServlet() {
-        books = new ArrayList<Book>();
+	static public String CLEAR_BTN = "clearBtn";
+    public MainServlet() throws Exception {
+    	bookDatabase = new BookDatabase("dba", "goalie", "books");
     }
+    
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    
     	if(request.getAttribute("showAddBookPage") == null) {
@@ -47,14 +56,26 @@ public class MainServlet extends HttpServlet {
     }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if(books.isEmpty()) {
+		if(bookDatabase.isEmpty()) {
 	        request.setAttribute("showAddBookPage", true);
 	        doPost(request, response);
 	        return;
 	    }
 	    
-		request.setAttribute("books", books);
-		request.getRequestDispatcher("BookTable.jsp").forward(request, response);
+		List<Book> books;
+		try {
+			books = bookDatabase.getBooks();
+			
+			request.setAttribute("books", books);
+			request.setAttribute("bookDatabase", bookDatabase);
+			request.getRequestDispatcher("BookTable.jsp").forward(request, response);
+		} catch (SQLException exception) {
+			System.out.println("SQLException, doGet bookDatabase.getBooks(): "
+				+ exception.getMessage()
+			);
+			exception.printStackTrace();
+		}
+		
 	}
 
 	private void addBook(HttpServletRequest request)
@@ -77,13 +98,18 @@ public class MainServlet extends HttpServlet {
     	DateFormat format = getDateFormat();
 		try {
 			java.sql.Date sqlDate = new java.sql.Date(format.parse(dateStr).getTime());
-			books.add(new Book(name, author, pageAmount, sqlDate));
+			bookDatabase.insertName(new Book(name, author, pageAmount, sqlDate), 1);
 			errorMessage = new String();
 		} catch (ParseException e) {
 			System.out.println("Publishing date incorrect. MainServlet.addBook()");
 		}
     }
     
+	private void clearBookDatabase()
+	{
+		bookDatabase.clear();
+	}
+	
     public static SimpleDateFormat getDateFormat()
     {
     	return new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
@@ -142,7 +168,5 @@ public class MainServlet extends HttpServlet {
     static public String getEmptyMessage(String fieldName)
     {
     	return "Field \"" + fieldName + "\" is empty!";
-    }
-    
-    
+    }  
 }

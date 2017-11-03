@@ -8,6 +8,11 @@ public class Book {
 	public Integer pageAmount;
 	public Date publishingData;
 	
+	public Book()
+	{
+		
+	}
+	
 	public Book(
 		String name,
 		String author,
@@ -19,5 +24,22 @@ public class Book {
 		this.pageAmount = pageAmount;
 		this.publishingData = publishingData;
 	}
+	
+	public String getName() {
+        return name;
+	}
+	
+	public String getAuthor() {
+        return author;
+	}
+	
+	public Integer getPageAmount() {
+        return pageAmount;
+	}
+	
+	public Date getPublishingData() {
+        return publishingData;
+	}
+	
 	
 }
