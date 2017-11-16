@@ -26,14 +26,8 @@ public class MainServletTests {
     static private ChromeDriverService service;
     static private WebDriver driver;
     
-    static private Date rightDate;
-    
     @BeforeClass
     public static void createAndStartService() throws IOException{
-    	Calendar calendar = Calendar.getInstance();
-		calendar.set(2012, 12, 12);
-		rightDate = new Date(calendar.getTimeInMillis());
-    	
         service = new ChromeDriverService.Builder()
                 .usingDriverExecutable(new File(PATH_TO_CHROME_DRIVER))
                 .usingAnyFreePort()
@@ -66,6 +60,10 @@ public class MainServletTests {
 
     @Test
     public void testPageAmountField() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2012, 12, 12);
+		Date rightDate = new Date(calendar.getTimeInMillis());
+		
         testFields(
         		"n",
         		"a",

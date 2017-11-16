@@ -124,7 +124,7 @@ public class HtmlTemplater {
 		for(int i = 0; i < templates.size(); i++) {
 			convertString = convertString.replace(templates.get(i), values.get(i));
 		}
-		//= string.replaceAll(regex, replacement)
+
 		return convertString;
 	}
 	

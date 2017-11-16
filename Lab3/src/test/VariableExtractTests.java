@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -21,13 +22,6 @@ import view.HtmlTemplater;
 class VariableExtractTests {
 
 	private HtmlTemplater templater = new HtmlTemplater();
-	private static Date date;
-	@BeforeClass
-    public static void setVariables() throws IOException{
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(2012, 12, 12);
-		date = new Date(calendar.getTimeInMillis());
-    }
 	
 	@Test
 	void checkExtractTemplateVariables() {
@@ -80,6 +74,10 @@ class VariableExtractTests {
 	
 	@Test
 	void checkGetValueForSimpleType() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2012, 12, 12);
+		Date date = new Date(calendar.getTimeInMillis());
+		
 		templater.setAttribute("strVar", "String", "theString");
 		templater.setAttribute("intVar", "Integer", new Integer(4));
 		templater.setAttribute("dateVar", "Date", date);
@@ -91,6 +89,10 @@ class VariableExtractTests {
 	
 	@Test
 	void checkGetValueForBook() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2012, 12, 12);
+		Date date = new Date(calendar.getTimeInMillis());
+		
 		Book testBook = new Book("n", "a", 9, date);
 		templater.setAttribute("bookVar", "Book", testBook);
 		
@@ -119,6 +121,10 @@ class VariableExtractTests {
 	void checkConvertString() {
 		templater.setAttribute("strVar", "String", "theString");
 		
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2012, 12, 12);
+		Date date = new Date(calendar.getTimeInMillis());
+		
 		Book testBook = new Book("n", "a", 9, date);
 		templater.setAttribute("book", "Book", testBook);
 		
@@ -132,13 +138,13 @@ class VariableExtractTests {
 		           + "<td>$(book.name)</td>"
 		           + "<td>$(book.author) </td>"
 		           + "<td>$(book.pageAmount)</td>"
-		           //+ "<td>$(book.publishingData)</td>"
+		           + "<td>$(book.publishingData)</td>"
 		           + "</tr>",
 		        "<tr>"
 		           + "<td>n</td>"
 		           + "<td>a </td>"
 		           + "<td>9</td>"
-		           //+ "<td>2012-12-12</td>"
+		           + "<td>2013-01-12</td>"
 		           + "</tr>"
 			);
 	}
