@@ -24,6 +24,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import model.Book;
 import model.BookDatabase;
+import view.HtmlTemplater;
 
 @WebServlet("/MainServlet")
 public class MainServlet extends HttpServlet {
@@ -37,6 +38,8 @@ public class MainServlet extends HttpServlet {
 	static public String BOOK_TABLE_TITLE = "Book table";
 	static public String ADD_BOOK_BTN = "addBookBtn";
 	static public String CLEAR_BTN = "clearBtn";
+	
+	private HtmlTemplater templater = new HtmlTemplater();
 	
     public MainServlet() throws Exception {
     	bookDatabase = new BookDatabase("dba", "goalie", "books");
@@ -83,14 +86,11 @@ public class MainServlet extends HttpServlet {
     		}
         }
     	
-		request.setAttribute("errorMessage", errorMessage);
-
-		
-		
-    	request.getRequestDispatcher("AddBooks.jsp").forward(request, response);
+		templater.setAttribute("errorMessage", "String", errorMessage);
+		printHtmlPage(response, templater.render("f:\\Study\\7_Semester\\–»œ\\Lab3\\WebContent\\AddBooks.html.template"));
     }
-    
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if(bookDatabase.isEmpty()) {
 	        request.setAttribute("showAddBookPage", true);
 	        doPost(request, response);
@@ -101,9 +101,8 @@ public class MainServlet extends HttpServlet {
 		try {
 			books = bookDatabase.getBooks();
 			
-			request.setAttribute("books", books);
-			request.setAttribute("bookDatabase", bookDatabase);
-			request.getRequestDispatcher("BookTable.jsp").forward(request, response);
+			templater.setAttribute("book", "Book", books.get(0));
+			printHtmlPage(response, templater.render("f:\\Study\\7_Semester\\–»œ\\Lab3\\WebContent\\BookTable.html.template"));
 	    	log.info("Open book table");
 		} catch (SQLException exception) {
 			String exceptionMessage = "SQLException, doGet bookDatabase.getBooks(): "
@@ -114,7 +113,14 @@ public class MainServlet extends HttpServlet {
 		}
 		
 	}
-
+    
+    private void printHtmlPage(HttpServletResponse response, String page) throws IOException {
+        response.setContentType("text/html");
+        java.io.PrintWriter out = response.getWriter();
+        out.print(page);
+        out.flush();
+    }
+    
 	private void addBook(HttpServletRequest request)
     {
     	String name = request.getParameter("name");

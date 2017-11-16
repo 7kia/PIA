@@ -26,8 +26,9 @@ public class HtmlTemplater {
 	
 	private Map<String, TemplateVariable> variables = new HashMap<String, TemplateVariable>();
 
-	static public void render(String fileName, HttpServletRequest request)
+	public String render(String fileName)
 	{
+		String page = "";
 		BufferedReader br = null;
 		FileReader fr = null;
 
@@ -40,10 +41,9 @@ public class HtmlTemplater {
 			String sCurrentLine;
 
 			while ((sCurrentLine = br.readLine()) != null) {
-				
-				System.out.println(sCurrentLine);
+				page += convertToTemplateString(sCurrentLine);
 			}
-
+			return page;
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -60,6 +60,7 @@ public class HtmlTemplater {
 				ex.printStackTrace();
 			}
 		}
+		return page;
 	}
 	
 	
