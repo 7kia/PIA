@@ -3,6 +3,7 @@ package test;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.Calendar;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -25,10 +26,14 @@ public class MainServletTests {
     static private ChromeDriverService service;
     static private WebDriver driver;
     
-    private Date rightDate = new Date(2012, 12, 12);
+    static private Date rightDate;
     
     @BeforeClass
     public static void createAndStartService() throws IOException{
+    	Calendar calendar = Calendar.getInstance();
+		calendar.set(2012, 12, 12);
+		rightDate = new Date(calendar.getTimeInMillis());
+    	
         service = new ChromeDriverService.Builder()
                 .usingDriverExecutable(new File(PATH_TO_CHROME_DRIVER))
                 .usingAnyFreePort()
@@ -153,8 +158,7 @@ public class MainServletTests {
     {
     	driver.findElement(By.className(MainServlet.ADD_BOOK_BTN)).click();
     	
-    	if(servletMessage != null)
-    	{
+    	if(servletMessage != null) {
     		String errorMessage = driver.findElement(By.tagName("h1")).getText();
     		Assert.assertEquals(errorMessage, servletMessage);
     		clearFields();
