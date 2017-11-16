@@ -6,13 +6,10 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -20,13 +17,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.log4j.SimpleLayout;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.FileAppender;
 
 import model.Book;
 import model.BookDatabase;
@@ -49,6 +43,7 @@ public class MainServlet extends HttpServlet {
     	
 
 		log.info("MainServlet start");
+		
     }
     
     
@@ -89,6 +84,9 @@ public class MainServlet extends HttpServlet {
         }
     	
 		request.setAttribute("errorMessage", errorMessage);
+
+		
+		
     	request.getRequestDispatcher("AddBooks.jsp").forward(request, response);
     }
     
