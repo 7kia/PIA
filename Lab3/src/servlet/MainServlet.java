@@ -3,6 +3,7 @@ package servlet;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,15 +65,42 @@ public class MainServlet extends HttpServlet {
 			String log4jProp = webAppPath + log4jLocation;
 			File yoMamaYesThisSaysYoMama = new File(log4jProp);
 			if (yoMamaYesThisSaysYoMama.exists()) {
-				System.out.println("Initializing log4j with: " + log4jProp);
+				log.info("Initializing log4j with: " + log4jProp);
 				PropertyConfigurator.configure(log4jProp);
 			} else {
-				System.err.println("*** " + log4jProp + " file not found, so initializing log4j with BasicConfigurator");
+			    log.error("*** " + log4jProp + " file not found, so initializing log4j with BasicConfigurator");
 				BasicConfigurator.configure();
 			}
 		}
 		super.init(config);
 	}
+    
+
+    public static SimpleDateFormat getDateFormat()
+    {
+        return new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+    }
+    
+    public static String getStringDatePresentation(Date date)
+    {
+        return getDateFormat().format(date);
+    }
+    
+   
+    static public String getOutOfRangeMessage() {
+        return "Field \"Page amount\" must be unsigned number in range[" 
+                + 0 + "; " + Integer.MAX_VALUE + "]";
+    }
+    
+    static public String getIncorrectDateMesage()
+    {
+        return "Field \"Publishing date\" must contain date";
+    }
+    
+    static public String getEmptyMessage(String fieldName)
+    {
+        return "Field \"" + fieldName + "\" is empty!";
+    }  
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    
     	if(request.getAttribute("showAddBookPage") == null) {
@@ -108,7 +136,6 @@ public class MainServlet extends HttpServlet {
 			String exceptionMessage = "SQLException, doGet bookDatabase.getBooks(): "
 				+ exception.getMessage();
 			log.error(exceptionMessage);
-			System.out.println(exceptionMessage);
 			exception.printStackTrace();
 		}
 		
@@ -144,78 +171,49 @@ public class MainServlet extends HttpServlet {
 			bookDatabase.insertName(new Book(name, author, pageAmount, sqlDate), 1);
 			errorMessage = new String();
 			log.info("Add book");
-		} catch (ParseException e) {
+		} catch (ParseException | SQLTimeoutException e) {
 			String exceptionMessage = "Publishing date incorrect. MainServlet.addBook()";
 			System.out.println(exceptionMessage);
 			log.error(exceptionMessage);
 		}
     }
-    
-	private void clearBookDatabase()
-	{
-		bookDatabase.clear();
-	}
 	
-    public static SimpleDateFormat getDateFormat()
-    {
-    	return new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+	private boolean checkPublishingData(HttpServletRequest request) {
+        String dateStr = request.getParameter("publishingDate");
+        DateFormat format = getDateFormat();
+        
+        try {
+            format.parse(dateStr);
+        } catch (ParseException e) {
+            errorMessage = getIncorrectDateMesage();
+            log.error(errorMessage);
+            return false;
+        }
+        return true;
     }
-    
-    public static String getStringDatePresentation(Date date)
-    {
-    	return getDateFormat().format(date);
-    }
-    
-    private boolean checkPublishingData(HttpServletRequest request) {
-    	String dateStr = request.getParameter("publishingDate");
-    	DateFormat format = getDateFormat();
-    	
-    	try {
-			Date date = format.parse(dateStr);
-		} catch (ParseException e) {
-			errorMessage = getIncorrectDateMesage();
-			log.error(errorMessage);
-			return false;
-		}
-		return true;
-	}
 
-	private boolean checkPublishingYear(HttpServletRequest request)
+    private boolean checkPublishingYear(HttpServletRequest request)
     {
-    	try
-    	{
-    		String yearString = request.getParameter("pageAmount");
-    		Integer number = Integer.parseUnsignedInt(yearString);
-    	} catch(NumberFormatException e) {
-    		errorMessage = getOutOfRangeMessage();
-    		log.error(errorMessage);
-    		return false;
-    	}
-    	return true;		
+        try
+        {
+            String yearString = request.getParameter("pageAmount");
+            Integer.parseUnsignedInt(yearString);
+        } catch(NumberFormatException e) {
+            errorMessage = getOutOfRangeMessage();
+            log.error(errorMessage);
+            return false;
+        }
+        return true;        
     }
-    
-    static public String getOutOfRangeMessage() {
-    	return "Field \"Page amount\" must be unsigned number in range[" 
-				+ 0 + "; " + Integer.MAX_VALUE + "]";
-    }
-    
-    static public String getIncorrectDateMesage()
-    {
-    	return "Field \"Publishing date\" must contain date";
-    }
-    
+	
     private boolean fieldIsEmpty(HttpServletRequest request, String fieldName)
     {
-    	if(request.getParameter(fieldName).isEmpty()) {
-    		errorMessage = getEmptyMessage(fieldName);
-    		log.error(errorMessage);
-    		return true;
-    	}
-    	return false;
+        if(request.getParameter(fieldName).isEmpty()) {
+            errorMessage = getEmptyMessage(fieldName);
+            log.error(errorMessage);
+            return true;
+        }
+        return false;
     }
-    
-    static public String getEmptyMessage(String fieldName)
-    {
-    	return "Field \"" + fieldName + "\" is empty!";
-    }  
+ 
 }

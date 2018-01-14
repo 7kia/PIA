@@ -1,24 +1,26 @@
 package model;
 
 import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.Properties;
 
-import model.Book;
+import org.apache.log4j.Logger;
+
+import servlet.MainServlet;
  
 public class BookDatabase {
     public static final String DATABASE_URL = "jdbc:com.nuodb://localhost/";
     
     private final Connection dbConnection;
-    static private String DB_NAME = "books";
+    static private final String dbName = "books";
+    
+    private static final Logger log = Logger.getLogger(MainServlet.class);
     
     private ArrayList<String> columnNames;
     private ArrayList<String> columnTypes;
@@ -55,24 +57,24 @@ public class BookDatabase {
     	dbConnection.close();
     }
     
-    public void createTable() {
+    public void createTable() throws SQLTimeoutException {
 	    try {
 	    	Statement stmt = dbConnection.createStatement();
-	        stmt.execute("CREATE TABLE " + DB_NAME 
+	        stmt.execute("CREATE TABLE " + dbName 
 	        		+ " (id int primary key, "+  getCreateColumnList() + ")"
 	        		);
 
 	        dbConnection.commit();
-	    } catch(SQLException exception) {
-	        System.out.println("SQLException, skipping table creation: " + exception.getMessage());
-	    } catch(Exception exception) {
-	        System.out.println("Untracked exception. Skipping table creation: " + exception.getMessage());
+	    } catch(SQLTimeoutException exception) {
+            log.error("SQLTimeoutException exception. Skipping table creation: " + exception.getMessage());
+        } catch(SQLException exception) {
+	        log.error("SQLException, skipping table creation: " + exception.getMessage());
 	    }
     }
     
     private String getCreateColumnList()
     {
-    	String result = new String();
+    	String result = "";
     	
     	for(int i = 0; i < columnNames.size(); i++)
     	{
@@ -85,42 +87,10 @@ public class BookDatabase {
     	return result;
     }
     
-    public void addBooks() {
-    	List<Book> bookList = new ArrayList<>();
-    	bookList.add(new Book("n", "a", 1, new Date(2012, 12, 12)));
-    	
-        try {
-        	String e = "insert into " + DB_NAME + 
-    			" (" + generateNameColumnList() + ")" +
-        		generateValuesPartStatement();
-        	
-        	PreparedStatement stmt = dbConnection.prepareStatement(
-    			"insert into " + DB_NAME +
-    			" (" + generateNameColumnList() + ")" +
-                generateValuesPartStatement()
-        	);
-        	
-            for (int i = 0; i < bookList.size(); i++) {
-            	stmt.setInt(1, i + 1);
-                stmt.setString(2, bookList.get(i).name);
-                stmt.setString(3, bookList.get(i).author);
-                stmt.setInt(4, bookList.get(i).pageAmount);
-                stmt.setDate(5, bookList.get(i).publishingData);
-                stmt.addBatch();             
-            }
-            stmt.executeBatch();
-            
-            dbConnection.commit();
-        } catch(SQLException exception) {
-	        System.out.println("SQLException, Skipping addBooks: " + exception.getMessage());
-	    } catch(Exception exception) {
-            System.out.println("Untracked exception. Skipping addBooks..." + exception.getMessage());
-        }
-    }
     
     private String generateNameColumnList()
     {
-    	String listValues = new String();
+    	String listValues = "";
     	for (int i = 0; i < columnNames.size(); i++) {
     		listValues += columnNames.get(i);
     		if((i + 1) < columnNames.size()) {
@@ -133,7 +103,7 @@ public class BookDatabase {
     
     private String generateValuesPartStatement()
     {
-    	String listValues = new String();
+    	String listValues = "";
 		for (int i = 0; i <= columnNames.size(); i++) {
 			listValues += "?";
 			if((i + 1) <= columnNames.size()) {
@@ -143,10 +113,10 @@ public class BookDatabase {
     	return " values (" + listValues + ")";
     }
     
-    public void insertName(Book book, int id) {
+    public void insertName(Book book, int id) throws SQLTimeoutException {
 	    try {
 	    	PreparedStatement stmt = dbConnection.prepareStatement(
-        		"insert into " + DB_NAME + 
+        		"insert into " + dbName + 
         		" (" + generateNameColumnList() + ")" +
         		generateValuesPartStatement()
         	);
@@ -162,40 +132,44 @@ public class BookDatabase {
 	        dbConnection.commit();
 	    
 	    } catch(SQLException exception) {
-	        System.out.println("SQLException, Skipping insert: " + exception.getMessage());
+	        log.error("SQLException, Skipping insert: " + exception.getMessage());
 	    } catch(Exception exception) {
-	        System.out.println("Untracked exception. Skipping insert..." + exception.getMessage());
+	        log.error("Untracked exception. Skipping insert..." + exception.getMessage());
 	    }
     }
     
     public String getName(int id) throws SQLException {
-    	PreparedStatement pst = dbConnection.prepareStatement(
-    		getSelectStatement("name", DB_NAME, "id=?")
+    	final PreparedStatement pst = dbConnection.prepareStatement(
+    		getSelectStatement("name", dbName, "id=?")
     	);
 
 	    pst.setInt(1, id);
 	        
-	    ResultSet rs = pst.executeQuery();
-        if (rs.next()) {
-        	return rs.getString(1);
+	    ResultSet resultSet = pst.executeQuery();
+        if (resultSet.next()) {
+        	return resultSet.getString(1);
         } 
+        resultSet.close();
         return null;
     }
     
-    public boolean isEmpty()
+    public boolean isEmpty() 
     {
     	try {
     		PreparedStatement stmt = dbConnection.prepareStatement(
-	    		getSelectStatement("count(*)", DB_NAME, "id=?")
+	    		getSelectStatement("count(*)", dbName, "id=?")
 	    	);
     		
-    		ResultSet rs = stmt.executeQuery();
-    		rs.next();
-            return rs.getInt(1) == 0;  
+        	ResultSet resultSet = stmt.executeQuery();
+        	
+    		if (resultSet.next()) {
+    		     return resultSet.getInt(1) == 0; 
+    		}
+    		
     	} catch(SQLException exception) {
     		return true;
  	    } catch(Exception exception) {
- 	        System.out.println("Untracked exception. Skipping insert..." + exception.getMessage());
+ 	        log.error("Untracked exception. Skipping insert..." + exception.getMessage());
  	    }
     	
     	return false;
@@ -205,65 +179,68 @@ public class BookDatabase {
     {
     	try {
 			PreparedStatement stmt = dbConnection.prepareStatement(
-					getDeleteStatement(DB_NAME)
+					getDeleteStatement(dbName)
 				);
 			
 			stmt.addBatch();
 	        stmt.executeBatch();
 	        dbConnection.commit();
 		} catch (SQLException exception) {
-			System.out.println("SQLException, Skipping clear: " + exception.getMessage());
+		    log.error("SQLException, Skipping clear: " + exception.getMessage());
 		}
     }
     
     private String getDeleteStatement(String tableName)
     {
-    	return "DELETE FROM " + DB_NAME + " where id > 0 ";
+    	return "DELETE FROM " + dbName + " where id > 0 ";
     }
     
     public String getPublishingData(int id) throws SQLException {
         PreparedStatement pst = dbConnection.prepareStatement(
-    		getSelectStatement("publishingData", DB_NAME, "id=?")
+    		getSelectStatement("publishingData", dbName, "id=?")
     	);
 
         pst.setInt(1, id);
-        ResultSet rs = pst.executeQuery();
-        if (rs.next()) {
-        	return rs.getString(1);
+        ResultSet resultSet = pst.executeQuery();
+        if (resultSet.next()) {
+        	return resultSet.getString(1);
         }    
         return null;
     }
     
     public Book getBook(int id) throws SQLException {
     	PreparedStatement pst = dbConnection.prepareStatement(
-    		getSelectStatement("*", DB_NAME, "id=" + id)
+    		getSelectStatement("*", dbName, "id=" + id)
     	);
     	
     	Book book = new Book();
     	
-    	ResultSet rs = pst.executeQuery();
-    	rs.next();
-    	book.name = rs.getString(2);
-    	book.author = rs.getString(3);
-    	book.pageAmount = rs.getInt(4);
-    	book.publishingData = rs.getDate(5);
+    	ResultSet resultSet = pst.executeQuery();
+    	
+    	if (resultSet.next()) {
+        	book.name = resultSet.getString(2);
+        	book.author = resultSet.getString(3);
+        	book.pageAmount = resultSet.getInt(4);
+        	book.publishingData = resultSet.getDate(5);
+    	}
     	
     	return book;
     }
     
     public List<Book> getBooks() throws SQLException {
     	PreparedStatement pst = dbConnection.prepareStatement(
-			"SELECT MAX(id) FROM " + DB_NAME
+			"SELECT MAX(id) FROM " + dbName
     	);
     	
     	List<Book> books = new ArrayList<Book>();
     	
-    	ResultSet rs = pst.executeQuery();
-    	rs.next();
-    	int lastId = rs.getInt(1);
-    	
-    	for(int i = 1; i <= lastId; i++) {
-    		books.add(getBook(i));
+    	ResultSet resultSet = pst.executeQuery();
+    	if (resultSet.next()) {
+        	int lastId = resultSet.getInt(1);
+        	
+        	for(int i = 1; i <= lastId; i++) {
+        		books.add(getBook(i));
+        	}
     	}
     	return books;
     }

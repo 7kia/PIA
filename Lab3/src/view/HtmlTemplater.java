@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-
 import model.Book;
 import model.TemplateVariable;
 
@@ -115,7 +113,7 @@ public class HtmlTemplater {
 		List<String> templates = extractTemplateVariables(string);
 		List<List<String>> variableParts = extractVariables(templates);
 		
-		List<String> values = new ArrayList();
+		List<String> values = new ArrayList<String>();
 		for(int i = 0; i < variableParts.size(); i++) {
 			String value = getValue(variableParts.get(i));
 			values.add(value);
@@ -139,46 +137,46 @@ public class HtmlTemplater {
 		return "";
 	}
 	
-	private String extractValue(TemplateVariable variable, List<String> variableParts)
-	{
-		switch (variable.type) {
-		case "String":
-			return variable.object.toString();
-		case "Integer":
-			return ((Integer) variable.object).toString();
-		case "Date":
-			return ((Date) variable.object).toString();
-		case "Book":
-			return extractValueToBook(variable, variableParts);
-		default:
-			break;
-		}
-		return "";
-	}
-	
-	private String extractValueToBook(TemplateVariable variable, List<String> variableParts)
-	{
-		if(variableParts.size() > 1) {
-			switch (variableParts.get(1)) {
-			case "name":
-				return ((Book) variable.object).name;
-			case "author":
-				return ((Book) variable.object).author;
-			case "pageAmount":
-				return ((Book) variable.object).pageAmount.toString();
-			case "publishingData":
-				return ((Book) variable.object).publishingData.toString();
-			default:
-				break;
-			}
-		}
-		
-		return "";
-	}
-	
 	public void setAttribute(String name, String type, Object object)
 	{
 		variables.put(name, new TemplateVariable(type, object));
 	}
 	
+	private String extractValue(TemplateVariable variable, List<String> variableParts)
+    {
+        switch (variable.type) {
+        case "String":
+            return variable.object.toString();
+        case "Integer":
+            return ((Integer) variable.object).toString();
+        case "Date":
+            return ((Date) variable.object).toString();
+        case "Book":
+            return extractValueToBook(variable, variableParts);
+        default:
+            break;
+        }
+        return "";
+    }
+    
+    private String extractValueToBook(TemplateVariable variable, List<String> variableParts)
+    {
+        if(variableParts.size() > 1) {
+            switch (variableParts.get(1)) {
+            case "name":
+                return ((Book) variable.object).name;
+            case "author":
+                return ((Book) variable.object).author;
+            case "pageAmount":
+                return ((Book) variable.object).pageAmount.toString();
+            case "publishingData":
+                return ((Book) variable.object).publishingData.toString();
+            default:
+                break;
+            }
+        }
+        
+        return "";
+    }
+    
 }
